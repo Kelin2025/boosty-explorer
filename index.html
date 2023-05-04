@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSV File Processing</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="file" id="csvFile" accept=".csv" />
+    <button id="geniusBtn">Copy Гений мысли Names</button>
+    <button id="clubRegularBtn">Copy Завсегдатай клуба Names</button>
+    <button id="billionaireBtn">Copy Миллиардер-Филантроп Names</button>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Type</th>
+          <th>Price</th>
+          <th>Total Money</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Level Name</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      let filteredData = [];
+      const delimeter = ";";
+
+      document.getElementById("csvFile").addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          console.log(e);
+          const csvData = e.target.result;
+          processData(csvData);
+        };
+        reader.readAsText(file);
+      });
+
+      document.getElementById("geniusBtn").addEventListener("click", () => {
+        copyNamesByLevel("Гений мысли");
+      });
+
+      document
+        .getElementById("clubRegularBtn")
+        .addEventListener("click", () => {
+          copyNamesByLevel("Завсегдатай клуба");
+        });
+
+      document
+        .getElementById("billionaireBtn")
+        .addEventListener("click", () => {
+          copyNamesByLevel("Миллиардер-Филантроп");
+        });
+
+      function processData(csvData) {
+        const lines = csvData.split("\n");
+        const result = [];
+        const headers = lines[0].split(delimeter);
+
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim()) {
+            const obj = {};
+            const currentline = lines[i].split(delimeter);
+
+            for (let j = 0; j < headers.length; j++) {
+              obj[headers[j]] = currentline[j]
+                .trim()
+                .replace(/^\"/, "")
+                .replace(/\"$/, "");
+            }
+            result.push(obj);
+          }
+        }
+
+        filteredData = filterData(result);
+        displayData(filteredData);
+      }
+
+      function filterData(data) {
+        console.log(data);
+        const today = new Date();
+        const filteredData = data.filter((item) => {
+          if (
+            item.level_name === "Follower" ||
+            item.level_name === "Почётный пупсик"
+          ) {
+            return false;
+          }
+          if (item.end_date !== "-" && new Date(item.end_date) < today) {
+            return false;
+          }
+          return true;
+        });
+
+        return filteredData.sort((a, b) =>
+          a.level_name.localeCompare(b.level_name)
+        );
+      }
+
+      function displayData(data) {
+        const tableBody = document.querySelector("#dataTable tbody");
+        tableBody.innerHTML = "";
+        data.forEach((item) => {
+          const row = document.createElement("tr");
+
+          Object.values(item).forEach((value) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+          });
+
+          tableBody.appendChild(row);
+        });
+      }
+
+      function copyNamesByLevel(levelName) {
+        const names = filteredData
+          .filter((item) => item.level_name === levelName)
+          .map((item) => item.name)
+          .join("\n");
+
+        const textArea = document.createElement("textarea");
+        textArea.value = names;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        alert(`Copied ${levelName} names to clipboard.`);
+      }
+    </script>
+  </body>
+</html>
