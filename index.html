@@ -22,9 +22,7 @@
   </head>
   <body>
     <input type="file" id="csvFile" accept=".csv" />
-    <button id="geniusBtn">Copy Гений мысли Names</button>
-    <button id="clubRegularBtn">Copy Завсегдатай клуба Names</button>
-    <button id="billionaireBtn">Copy Миллиардер-Филантроп Names</button>
+    <div id="buttonsContainer"></div>
     <table id="dataTable">
       <thead>
         <tr>
@@ -56,21 +54,21 @@
         reader.readAsText(file);
       });
 
-      document.getElementById("geniusBtn").addEventListener("click", () => {
-        copyNamesByLevel("Гений мысли");
-      });
+      // document.getElementById("geniusBtn").addEventListener("click", () => {
+      //   copyNamesByLevel("Гений мысли");
+      // });
 
-      document
-        .getElementById("clubRegularBtn")
-        .addEventListener("click", () => {
-          copyNamesByLevel("Завсегдатай клуба");
-        });
+      // document
+      //   .getElementById("clubRegularBtn")
+      //   .addEventListener("click", () => {
+      //     copyNamesByLevel("Завсегдатай клуба");
+      //   });
 
-      document
-        .getElementById("billionaireBtn")
-        .addEventListener("click", () => {
-          copyNamesByLevel("Миллиардер-Филантроп");
-        });
+      // document
+      //   .getElementById("billionaireBtn")
+      //   .addEventListener("click", () => {
+      //     copyNamesByLevel("Миллиардер-Филантроп");
+      //   });
 
       function processData(csvData) {
         const lines = csvData.split("\n");
@@ -94,6 +92,7 @@
 
         filteredData = filterData(result);
         displayData(filteredData);
+        createLevelButtons(filteredData);
       }
 
       function filterData(data) {
@@ -130,6 +129,22 @@
           });
 
           tableBody.appendChild(row);
+        });
+      }
+
+      function createLevelButtons(data) {
+        const buttonsContainer = document.getElementById("buttonsContainer");
+        buttonsContainer.innerHTML = "";
+
+        const uniqueLevels = [...new Set(data.map((item) => item.level_name))];
+
+        uniqueLevels.forEach((levelName) => {
+          const button = document.createElement("button");
+          button.textContent = `Copy ${levelName} Names`;
+          button.addEventListener("click", () => {
+            copyNamesByLevel(levelName);
+          });
+          buttonsContainer.appendChild(button);
         });
       }
 
